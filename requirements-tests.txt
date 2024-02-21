@@ -3,4 +3,4 @@ testbook~=0.4.2
 matplotlib
 smt
 black
-numba
+numba~=0.56.4
