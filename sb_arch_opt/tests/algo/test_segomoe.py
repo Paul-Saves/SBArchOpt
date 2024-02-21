@@ -104,43 +104,43 @@ class TestSEGOMOE(unittest.TestCase):
             assert len(opt) == 1
             assert np.all(interface.x == MDBranin().correct_x(interface.x)[0])
 
-    #     @check_dependency()
-    #     def test_so_mixed_constrained(self):
-    #         with tempfile.TemporaryDirectory() as tmp_folder:
-    #
-    #             interface = SEGOMOEInterface(
-    #                 MDCantileveredBeam(), tmp_folder, n_init=10, n_infill=2, use_moe=False
-    #             )
-    #             opt = interface.run_optimization()
-    #             assert interface.f.shape == (12, 1)
-    #             assert interface.g.shape == (12, 2)
-    #
-    #             feasible_mask = np.all(interface.g < 0, axis=1)
-    #             assert len(np.where(feasible_mask)[0]) > 0
-    #             assert len(opt) == 1
-    #
-    #             pop = interface.pop
-    #             assert np.all(pop.get("feas") == feasible_mask)
-    #
-    #     @check_dependency()
-    #     def test_so_failing(self):
-    #         with tempfile.TemporaryDirectory() as tmp_folder:
-    #
-    #             interface = SEGOMOEInterface(
-    #                 Mueller01(), tmp_folder, n_init=50, n_infill=2, use_moe=False
-    #             )
-    #             interface.run_optimization()
-    #             assert interface.n < 52
-    #             assert interface.n_tried == 52
-    #             assert interface.n + interface.n_failed == 52
-    #
-    #             interface2 = SEGOMOEInterface(
-    #                 Mueller01(), tmp_folder, n_init=50, n_infill=2, use_moe=False
-    #             )
-    #             interface2.initialize_from_previous()
-    #             assert interface2.n < 52
-    #             assert interface2.n_tried == 52
-    #             assert interface2.n + interface2.n_failed == 52
+    @check_dependency()
+    def test_so_mixed_constrained(self):
+        with tempfile.TemporaryDirectory() as tmp_folder:
+
+            interface = SEGOMOEInterface(
+                MDCantileveredBeam(), tmp_folder, n_init=10, n_infill=2, use_moe=False
+            )
+            opt = interface.run_optimization()
+            assert interface.f.shape == (12, 1)
+            assert interface.g.shape == (12, 2)
+
+            feasible_mask = np.all(interface.g < 0, axis=1)
+            assert len(np.where(feasible_mask)[0]) > 0
+            assert len(opt) == 1
+
+            pop = interface.pop
+            assert np.all(pop.get("feas") == feasible_mask)
+
+    @check_dependency()
+    def test_so_failing(self):
+        with tempfile.TemporaryDirectory() as tmp_folder:
+
+            interface = SEGOMOEInterface(
+                Mueller01(), tmp_folder, n_init=50, n_infill=2, use_moe=False
+            )
+            interface.run_optimization()
+            assert interface.n < 52
+            assert interface.n_tried == 52
+            assert interface.n + interface.n_failed == 52
+
+            interface2 = SEGOMOEInterface(
+                Mueller01(), tmp_folder, n_init=50, n_infill=2, use_moe=False
+            )
+            interface2.initialize_from_previous()
+            assert interface2.n < 52
+            assert interface2.n_tried == 52
+            assert interface2.n + interface2.n_failed == 52
 
     @check_dependency()
     def test_mo_cont(self):
