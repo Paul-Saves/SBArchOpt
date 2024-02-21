@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import os
 import logging
 import numpy as np
@@ -31,26 +32,26 @@ from sb_arch_opt.util import capture_log
 from pymoo.core.population import Population
 from sb_arch_opt.problem import ArchOptProblemBase
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
+from smt.surrogate_models.krg_based import MixIntKernelType
+from sb_arch_opt.algo.arch_sbo.models import ModelFactory
 
 try:
     from segomoe.sego import Sego
     from segomoe.constraint import Constraint
     from segomoe.sego_defs import get_sego_file_map, ExitStatus
-    from smt.surrogate_models.krg_based import MixIntKernelType
-    from sb_arch_opt.algo.arch_sbo.models import ModelFactory
 
     HAS_SEGOMOE = True
 except ImportError:
     HAS_SEGOMOE = False
 
-__all__ = ['HAS_SEGOMOE', 'check_dependencies', 'SEGOMOEInterface']
+__all__ = ["HAS_SEGOMOE", "check_dependencies", "SEGOMOEInterface"]
 
-log = logging.getLogger('sb_arch_opt.segomoe')
+log = logging.getLogger("sb_arch_opt.segomoe")
 
 
 def check_dependencies():
     if not HAS_SEGOMOE:
-        raise ImportError(f'SEGOMOE not installed!')
+        raise ImportError(f"SEGOMOE not installed!")
 
 
 class SEGOMOEInterface:
@@ -58,8 +59,17 @@ class SEGOMOEInterface:
     Class for interfacing with SEGOMOE
     """
 
-    def __init__(self, problem: ArchOptProblemBase, results_folder: str, n_init: int, n_infill: int, use_moe=True,
-                 sego_options=None, model_options=None, verbose=True):
+    def __init__(
+        self,
+        problem: ArchOptProblemBase,
+        results_folder: str,
+        n_init: int,
+        n_infill: int,
+        use_moe=True,
+        sego_options=None,
+        model_options=None,
+        verbose=True,
+    ):
         check_dependencies()
         self._problem = problem
         self._results_folder = results_folder
@@ -148,8 +158,10 @@ class SEGOMOEInterface:
         population = self._problem.load_previous_results(results_folder)
         if population is not None:
             self._x, self._x_failed, self._y = self._get_xy(population)
-            log.info(f'Previous results loaded from problem results: {len(population)} design points '
-                     f'({self.n} ok, {self.n_failed} failed)')
+            log.info(
+                f"Previous results loaded from problem results: {len(population)} design points "
+                f"({self.n} ok, {self.n_failed} failed)"
+            )
             return
 
         # Load from optimizer state
@@ -165,11 +177,13 @@ class SEGOMOEInterface:
             # Flip inequality constraints, as the problem defines satisfaction G <= 0 but SEGOMOE saves it as opposite
             self._y = self._flip_g(np.load(y_path))
 
-            log.info(f'Previous results loaded from optimizer state: {self._x.shape[0]} design points '
-                     f'({self.n} ok, {self.n_failed} failed)')
+            log.info(
+                f"Previous results loaded from optimizer state: {self._x.shape[0]} design points "
+                f"({self.n} ok, {self.n_failed} failed)"
+            )
             return
 
-        log.info('No previous results found')
+        log.info("No previous results found")
 
     def run_optimization(self):
         capture_log()
@@ -181,14 +195,18 @@ class SEGOMOEInterface:
         # Run DOE if needed
         n_available = self.n_tried
         if n_available < self.n_init:
-            log.info(f'Running DOE of {self.n_init-n_available} points ({self.n_init} total)')
-            self.run_doe(self.n_init-n_available)
+            log.info(
+                f"Running DOE of {self.n_init-n_available} points ({self.n_init} total)"
+            )
+            self.run_doe(self.n_init - n_available)
 
         # Run optimization
         n_available = self.n_tried
-        if n_available < self.n_init+self.n_infill:
-            n_infills = self.n_infill - (n_available-self.n_init)
-            log.info(f'Running optimization: {n_infills} infill points (ok DOE points: {self.n})')
+        if n_available < self.n_init + self.n_infill:
+            n_infills = self.n_infill - (n_available - self.n_init)
+            log.info(
+                f"Running optimization: {n_infills} infill points (ok DOE points: {self.n})"
+            )
             self.run_infills(n_infills)
 
         # Save final results and return Pareto front
@@ -203,13 +221,15 @@ class SEGOMOEInterface:
         self._x, self._x_failed, self._y = self._get_xy(self._evaluate(x_doe))
 
         if self._x.shape[0] < 2:
-            log.info(f'Not enough points sampled ({self._x.shape[0]} success, {self._x_failed.shape[0]} failed),'
-                     f'problems with model fitting can be expected')
+            log.info(
+                f"Not enough points sampled ({self._x.shape[0]} success, {self._x_failed.shape[0]} failed),"
+                f"problems with model fitting can be expected"
+            )
 
         self._save_results()
 
     def _sample_doe(self, n: int) -> np.ndarray:
-        return HierarchicalSampling().do(self._problem, n).get('X')
+        return HierarchicalSampling().do(self._problem, n).get("X")
 
     def run_infills(self, n_infills: int = None):
         if n_infills is None:
@@ -219,7 +239,7 @@ class SEGOMOEInterface:
         def _grouped_eval(x):
             nonlocal i_eval
             i_eval += 1
-            log.info(f'Evaluating: {i_eval}/{n_infills}')
+            log.info(f"Evaluating: {i_eval}/{n_infills}")
 
             x, x_failed, y = self._get_xy(self._evaluate(np.array([x])))
 
@@ -232,7 +252,9 @@ class SEGOMOEInterface:
                 return [], True
             return y[0, :], False
 
-        log.info(f'Running SEGO for {n_infills} infills ({self._x.shape[0]} points in database)')
+        log.info(
+            f"Running SEGO for {n_infills} infills ({self._x.shape[0]} points in database)"
+        )
         sego = self._get_sego(_grouped_eval)
         sego.run_optim(n_iter=n_infills)
 
@@ -242,11 +264,15 @@ class SEGOMOEInterface:
 
         for i in range(n_infills):
             # Ask for a new infill point
-            log.info(f'Getting new infill point {i+1}/{n_infills} (point {self._x.shape[0]+1} overall)')
+            log.info(
+                f"Getting new infill point {i+1}/{n_infills} (point {self._x.shape[0]+1} overall)"
+            )
             x = self._ask_infill()
 
             # Evaluate and impute
-            log.info(f'Evaluating point {i+1}/{n_infills} (point {self._x.shape[0]+1} overall)')
+            log.info(
+                f"Evaluating point {i+1}/{n_infills} (point {self._x.shape[0]+1} overall)"
+            )
             x, x_failed, y = self._get_xy(self._evaluate(np.array([x])))
 
             # Update and save DOE
@@ -269,7 +295,7 @@ class SEGOMOEInterface:
         sego = self._get_sego(_dummy_f_grouped)
         res = sego.run_optim(n_iter=1)
         if res is not None and res[0] == ExitStatus.runtime_error[0]:
-            raise RuntimeError(f'Error during SEGOMOE infill search: {res[0]}')
+            raise RuntimeError(f"Error during SEGOMOE infill search: {res[0]}")
 
         # Return latest point as suggested infill point
         return sego.get_x(i=-1)
@@ -278,28 +304,29 @@ class SEGOMOEInterface:
         design_space_spec = self._get_design_space()
 
         model_type = {
-            'type': 'MIXEDsmt' if design_space_spec.is_mixed_discrete else 'KRGsmt',
-            'regr': 'constant',
-            'corr': 'squar_exp',
-            'design_space': design_space_spec.design_space,
-            'categorical_kernel': MixIntKernelType.GOWER,
-            'theta0': [1e-3],
-            'thetaL': [1e-6],
-            'thetaU': [10.],
-            'normalize': True,
+            "type": "MIXED" if design_space_spec.is_mixed_discrete else None,
+            "name": "KRG",
+            "regr": "constant",
+            "corr": "squar_exp",
+            "design_space": design_space_spec.design_space,
+            "categorical_kernel": MixIntKernelType.GOWER,
+            "theta0": [1e-3],
+            "thetaL": [1e-6],
+            "thetaU": [10.0],
+            "normalize": True,
             **self.model_options,
         }
 
         optim_settings = {
-            'grouped_eval': True,
-            'n_obj': self._problem.n_obj,
-            'model_type': {'obj': model_type, 'con': model_type},
-            'n_clusters': 0 if self.use_moe else 1,
-            'optimizer': 'slsqp',
-            'analytical_diff': False,
-            'profiling': False,
-            'verbose': self.verbose,
-            'cst_crit': 'MC',
+            "grouped_eval": True,
+            "n_obj": self._problem.n_obj,
+            "model_type": {"obj": model_type, "con": model_type},
+            "n_clusters": 0 if self.use_moe else 1,
+            "optimizer": "slsqp",
+            "analytical_diff": False,
+            "profiling": False,
+            "verbose": self.verbose,
+            "cst_crit": "MC",
             **self.sego_options,
         }
 
@@ -318,9 +345,9 @@ class SEGOMOEInterface:
     def _get_constraints(self):
         constraints = []
         for i in range(self._problem.n_ieq_constr):
-            constraints.append(Constraint(con_type='<', bound=0., name=f'g{i}'))
+            constraints.append(Constraint(con_type="<", bound=0.0, name=f"g{i}"))
         for i in range(self._problem.n_eq_constr):
-            constraints.append(Constraint(con_type='=', bound=0., name=f'h{i}'))
+            constraints.append(Constraint(con_type="=", bound=0.0, name=f"h{i}"))
         return constraints
 
     def _save_results(self):
@@ -339,7 +366,11 @@ class SEGOMOEInterface:
         self._problem.store_results(self._results_folder)
 
     def _get_doe_paths(self):
-        return self._get_sego_file_path('x'), self._get_sego_file_path('y'), self._get_sego_file_path('x_fails')
+        return (
+            self._get_sego_file_path("x"),
+            self._get_sego_file_path("y"),
+            self._get_sego_file_path("x_fails"),
+        )
 
     def _get_sego_file_path(self, key):
         return os.path.join(self._results_folder, get_sego_file_map()[key])
@@ -356,20 +387,22 @@ class SEGOMOEInterface:
         out = self._problem.evaluate(x, return_as_dictionary=True)
         return Population.new(**out)
 
-    def _get_xy(self, population: Population) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _get_xy(
+        self, population: Population
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Concatenate evaluation outputs (F, G, H) and split x into evaluated and failed points.
         Returns: x, x_failed, y"""
 
         # Concatenate outputs
-        outputs = [population.get('F')]
+        outputs = [population.get("F")]
         if self._problem.n_ieq_constr > 0:
-            outputs.append(population.get('G'))
+            outputs.append(population.get("G"))
         if self._problem.n_eq_constr > 0:
-            outputs.append(population.get('H'))
+            outputs.append(population.get("H"))
         y = np.column_stack(outputs)
 
         # Split x into ok and failed points
-        x = population.get('X')
+        x = population.get("X")
         is_failed = self._problem.get_failed_points(population)
         x_failed = x[is_failed, :]
         x = x[~is_failed, :]
@@ -387,7 +420,7 @@ class SEGOMOEInterface:
             g = np.zeros((y.shape[0], 0))
 
         if self._problem.n_eq_constr > 0:
-            h = y[:, :self._problem.n_eq_constr]
+            h = y[:, : self._problem.n_eq_constr]
         else:
             h = np.zeros((y.shape[0], 0))
 
@@ -401,17 +434,17 @@ class SEGOMOEInterface:
     def get_population(self, x: np.ndarray, y: np.ndarray) -> Population:
         # Inequality constraint values are flipped to correctly calculate constraint violation values in pymoo
         f, g, h = self._split_y(y)
-        kwargs = {'X': x, 'F': f, 'G': g, 'H': h}
+        kwargs = {"X": x, "F": f, "G": g, "H": h}
         pop = Population.new(**kwargs)
         return pop
 
     @staticmethod
     def _get_pareto_front(population: Population) -> Population:
-        f = population.get('F')
+        f = population.get("F")
         if f.shape[0] == 0:
             return population.copy()
 
-        f = f[population.get('feas')]
+        f = f[population.get("feas")]
         if f.shape[0] == 0:
             return population.copy()
 
