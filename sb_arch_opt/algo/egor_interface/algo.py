@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import logging
 import numpy as np
 from typing import Tuple
@@ -52,7 +53,7 @@ log = logging.getLogger("sb_arch_opt.egor")
 
 def check_dependencies():
     if not HAS_EGOBOX:
-        raise ImportError(f"egobox not installed!")
+        raise ImportError("egobox not installed!")
 
 
 class EgorArchOptInterface:
@@ -155,7 +156,7 @@ class EgorArchOptInterface:
         population = load_from_previous_results(self._problem, results_folder)
         if population is None:
             log.info(
-                f"No previous population found, not changing initialization strategy"
+                "No previous population found, not changing initialization strategy"
             )
         else:
             self._x, self._x_failed, self._y = self._get_xy(population)
