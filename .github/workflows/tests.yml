@@ -41,7 +41,7 @@ jobs:
     
     - name: Check format with black
       run: |
-        black --sb_arch_opt
+        black --version sb_arch_opt
         black --diff sb_arch_opt
         black --check sb_arch_opt
         
