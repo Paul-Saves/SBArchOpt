@@ -302,7 +302,7 @@ class SEGOMOEInterface:
 
     def _get_sego(self, f_grouped):
         design_space_spec = self._get_design_space()
-        if design_space_spec.is_mixed_discrete :
+        if design_space_spec.is_mixed_discrete:
             model_type = {
                 "type": "MIXED",
                 "name": "KRG",
@@ -316,19 +316,19 @@ class SEGOMOEInterface:
                 "normalize": True,
                 **self.model_options,
             }
-        else : 
-           model_type = {
-               "name": "KRG",
-               "regr": "constant",
-               "corr": "squar_exp",
-               "design_space": design_space_spec.design_space,
-               "categorical_kernel": MixIntKernelType.GOWER,
-               "theta0": [1e-3],
-               "thetaL": [1e-6],
-               "thetaU": [10.0],
-               "normalize": True,
-               **self.model_options,
-           }
+        else:
+            model_type = {
+                "name": "KRG",
+                "regr": "constant",
+                "corr": "squar_exp",
+                "design_space": design_space_spec.design_space,
+                "categorical_kernel": MixIntKernelType.GOWER,
+                "theta0": [1e-3],
+                "thetaL": [1e-6],
+                "thetaU": [10.0],
+                "normalize": True,
+                **self.model_options,
+            }
         optim_settings = {
             "grouped_eval": True,
             "n_obj": self._problem.n_obj,
