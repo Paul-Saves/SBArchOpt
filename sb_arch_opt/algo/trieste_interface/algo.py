@@ -107,7 +107,7 @@ FAILED = "FAILED"
 def check_dependencies():
     if not HAS_TRIESTE:
         raise ImportError(
-            f"Trieste dependencies not installed: python setup.py install[trieste]"
+            "Trieste dependencies not installed: python setup.py install[trieste]"
         )
 
 

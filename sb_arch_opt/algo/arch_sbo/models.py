@@ -76,7 +76,7 @@ __all__ = [
 def check_dependencies():
     if not HAS_ARCH_SBO:
         raise ImportError(
-            f"ArchSBO dependencies not installed: pip install sb-arch-opt[arch_sbo]"
+            "ArchSBO dependencies not installed: pip install sb-arch-opt[arch_sbo]"
         )
 
 

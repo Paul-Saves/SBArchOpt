@@ -21,7 +21,6 @@ import enum
 import numpy as np
 from typing import *
 from deprecated import deprecated
-from scipy.spatial import distance
 from sb_arch_opt.sampling import *
 from pymoo.problems.multi.zdt import ZDT1
 from sb_arch_opt.problems.discrete import *

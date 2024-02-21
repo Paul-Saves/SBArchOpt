@@ -166,7 +166,7 @@ class EagerCorrectorBase(CorrectorBase):
         x_valid, is_active_valid = self.x_valid_active
         if x_valid is None or is_active_valid is None:
             raise CorrectorUnavailableError(
-                f"Eager corrector unavailable because problem does not provide x_all"
+                "Eager corrector unavailable because problem does not provide x_all"
             )
 
         # Separate canonical design vectors
