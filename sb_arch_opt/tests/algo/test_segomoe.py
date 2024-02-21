@@ -17,9 +17,11 @@ from sb_arch_opt.problems.hidden_constraints import (
     MOHierarchicalRosenbrockHC,
 )
 
-check_dependency = lambda: pytest.mark.skipif(
-    not HAS_SEGOMOE, reason="SEGOMOE dependencies not installed"
-)
+
+def check_dependency():
+    return pytest.mark.skipif(
+        not HAS_SEGOMOE, reason="SEGOMOE dependencies not installed"
+    )
 
 
 class TestSEGOMOE(unittest.TestCase):

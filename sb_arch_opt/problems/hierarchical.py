@@ -1301,7 +1301,9 @@ class TunableHierarchicalMetaProblem(HierarchyProblemBase):
 class HierBranin(TunableHierarchicalMetaProblem):
 
     def __init__(self):
-        factory = lambda n: MDBranin()
+        def factory(n):
+            return MDBranin()
+
         super().__init__(
             factory, imp_ratio=5.0, n_subproblem=50, diversity_range=0.5, n_opts=3
         )
@@ -1317,7 +1319,9 @@ class TunableZDT1(TunableHierarchicalMetaProblem):
         n_opts=3,
         cont_ratio=1.0,
     ):
-        factory = lambda n: NoHierarchyWrappedProblem(ZDT1(n_var=n))
+        def factory(n):
+            return NoHierarchyWrappedProblem(ZDT1(n_var=n))
+
         super().__init__(
             factory,
             imp_ratio=imp_ratio,
@@ -1357,14 +1361,18 @@ class HierDiscreteZDT1(TunableZDT1):
 class HierCantileveredBeam(TunableHierarchicalMetaProblem):
 
     def __init__(self):
-        factory = lambda n: ArchCantileveredBeam()
+        def factory(n):
+            return ArchCantileveredBeam()
+
         super().__init__(factory, imp_ratio=6.0, n_subproblem=20, diversity_range=0.5)
 
 
 class HierCarside(TunableHierarchicalMetaProblem):
 
     def __init__(self):
-        factory = lambda n: ArchCarside()
+        def factory(n):
+            return ArchCarside()
+
         super().__init__(factory, imp_ratio=7.0, n_subproblem=50, diversity_range=0.5)
 
 
